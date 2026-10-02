@@ -69,6 +69,10 @@ case "$OS" in
 esac
 [ ${#PIP[@]} -gt 0 ] && CMDS+=("python3 -m pip install --user $(dedup "${PIP[@]}")")
 
+# --quiet ne dit rien du tout : render.sh s'en sert pour savoir s'il peut
+# continuer, puis rappelle le script en clair. Sinon le diagnostic sort deux fois.
+[ "$QUIET" = "--quiet" ] && exit 1
+
 echo
 N=$(dedup "${MISSING[@]}" | wc -w | tr -d ' ')
 if [ "$N" = 1 ]; then echo "One thing is missing. To install it, run:"

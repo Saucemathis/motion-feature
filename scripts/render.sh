@@ -16,7 +16,7 @@ esac
 # Ce qui manque se dit avant le rendu, en clair, pas sous la forme d'un
 # "command not found" apres huit cents frames.
 if ! "$(dirname "$0")/check-setup.sh" --quiet; then
-  "$(dirname "$0")/check-setup.sh"
+  "$(dirname "$0")/check-setup.sh" || true
   exit 4
 fi
 
