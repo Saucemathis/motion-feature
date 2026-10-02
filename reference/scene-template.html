@@ -50,7 +50,7 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
 /* ---- 3. THE WINDOW ------------------------------------------------------- */
 /* Give it the product's real proportions. Everything is measured from it, so its
    size here is the only place that number lives. */
-#card{position:absolute;left:-40px;top:70px;width:2000px;height:940px;background:#fff;
+#card{position:absolute;left:120px;top:70px;width:1680px;height:940px;background:#fff;
   opacity:0;transform-origin:50% 50%;will-change:transform,opacity;
   border-radius:22px;overflow:hidden;
   box-shadow:0 50px 100px -24px rgba(45,26,102,.30), 0 12px 30px rgba(45,26,102,.10),
@@ -61,7 +61,7 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
 .topbar .brand{font:700 19px/1 var(--serif);color:var(--gray-950)}
 .topbar .where{font:500 14px/1 var(--sans);color:var(--gray-500)}
 
-#app{position:absolute;left:0;top:62px;width:2000px;height:878px;background:var(--page)}
+#app{position:absolute;left:0;top:62px;width:1680px;height:878px;background:var(--page)}
 .screen{position:absolute;inset:0;opacity:0}      /* one per screen of your film */
 
 .chrome{height:58px;display:flex;align-items:center;padding:0 32px;background:#fff;
@@ -76,7 +76,27 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
 /* A control lights up before it is clicked: without it we see the cursor pass, not act. */
 .act.hot{background:var(--gray-100);border-color:var(--brand-300);
   box-shadow:0 0 0 3px rgba(184,162,251,.30)}
-.body{padding:26px 32px;font:400 14px/1.6 var(--sans);color:var(--gray-500)}
+.work{position:absolute;left:0;top:58px;right:0;bottom:0;display:flex}
+.side{width:280px;flex:none;padding:24px 18px;background:#fff;
+  border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.side .nav{font:500 14.5px/1 var(--sans);color:var(--gray-500);padding:12px 14px;
+  border-radius:9px}
+.side .nav.on{background:var(--brand-100);color:var(--brand-700);font-weight:600}
+.list{flex:1;padding:22px 32px;display:flex;flex-direction:column;align-items:center}
+.row{display:flex;align-items:center;gap:16px;height:92px;margin-bottom:12px;flex:none;
+  width:100%;max-width:1180px;
+  padding:0 22px;background:#fff;border:1px solid var(--gray-200);border-radius:14px;
+  overflow:hidden;box-shadow:0 1px 2px rgba(24,24,27,.04)}
+/* The produced row is laid out at zero height; the timeline opens it. */
+.row.new{height:0;margin-bottom:0;opacity:0;border-color:var(--brand-300);
+  box-shadow:0 0 0 3px rgba(184,162,251,.22)}
+.dot{width:12px;height:12px;flex:none;border-radius:999px;background:var(--gray-300)}
+.dot.on{background:var(--brand-500)}
+.lines{display:flex;flex-direction:column;gap:7px}
+.lines b{font:600 16px/1 var(--sans);color:var(--gray-900)}
+.lines i{font:400 13.5px/1 var(--sans);font-style:normal;color:var(--gray-400)}
+.tag{margin-left:auto;font:600 12px/1 var(--sans);color:var(--brand-700);
+  background:var(--brand-100);padding:7px 11px;border-radius:999px}
 
 /* ---- the cursor ---------------------------------------------------------- */
 #cursor{position:absolute;left:0;top:0;width:28.8px;height:32.2px;
@@ -123,9 +143,40 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
               <span class="act prom">Something else</span>
             </span>
           </div>
-          <p class="body">Build the real page here, from the screenshots and the design
-            system. Everything the cursor aims at is measured from the markup, so the
-            layout is the only place a coordinate lives.</p>
+          <!-- Build the real page here, from the screenshots and the design system.
+               Everything the cursor aims at is measured from the markup, so the
+               layout is the only place a coordinate lives. -->
+          <div class="work">
+            <nav class="side">
+              <span class="nav on">Everything</span>
+              <span class="nav">In progress</span>
+              <span class="nav">Shared with me</span>
+              <span class="nav">Archive</span>
+            </nav>
+            <div class="list">
+              <!-- What the gesture produces. It has no height before the click: a
+                   result already on screen is not a result. -->
+              <div class="row new" id="rowNew">
+                <span class="dot on"></span>
+                <span class="lines"><b>What the control just made</b><i>a moment ago</i></span>
+                <span class="tag">New</span>
+              </div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>An item that was already there</b><i>yesterday</i></span></div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>Another one, with its own second line</b><i>yesterday</i></span></div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>A third, so the list reads as a list</b><i>last week</i></span></div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>And a fourth, so the page looks lived in</b><i>last week</i></span></div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>A fifth, because an empty page reads as a mockup</b><i>last week</i></span></div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>A sixth, with a second line of its own</b><i>two weeks ago</i></span></div>
+              <div class="row"><span class="dot"></span>
+                <span class="lines"><b>A seventh, where the list ends</b><i>two weeks ago</i></span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -195,6 +246,7 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
   var screens = [].slice.call(document.querySelectorAll('.screen'));
   var frag    = document.getElementById('f0');
   var btn     = document.getElementById('btn');
+  var rowNew  = document.getElementById('rowNew');
 
   /* --- helpers ---------------------------------------------------------- */
   function clamp(v,a,b){return v<a?a:(v>b?b:v);}
@@ -230,11 +282,16 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
      upper third and past any icon, never on its edge. */
   function aim(rect, fx, fy){return {x:rect.left+rect.width*fx, y:rect.top+rect.height*fy};}
 
+  /* The produced row is measured at the height it will have, not at the zero it
+     starts from: measured collapsed, the camera aims above the list. */
+  rowNew.style.height='92px'; rowNew.style.marginBottom='12px'; rowNew.style.opacity='1';
   var A = {
     card: centre(cardEl),
-    btn : centre(btn)
+    btn : centre(btn),
+    row : centre(rowNew)
     /* add one entry per element the film aims at */
   };
+  rowNew.style.height='0'; rowNew.style.marginBottom='0'; rowNew.style.opacity='0';
 
   /* --- framing ---------------------------------------------------------- */
   /* A beat is written as "how much world width should be visible", so the same
@@ -243,7 +300,7 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
   var SQ = FMT!=='16x9';
   var cardW = A.card.r.width;
 
-  var S_WIDE = zoom(cardW + (SQ?120:300));   /* the opening: the window plus a margin */
+  var S_WIDE = zoom(cardW + (SQ?260:300));   /* the opening: the window plus a margin */
   var S_NEAR = zoom(SQ?1550:1720);           /* a step closer, the window still whole */
   var S_TIGHT= zoom(SQ?1300:1250);           /* the beat that carries the argument */
 
@@ -322,8 +379,10 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
   var CAM = [
     {t:0.00,  x:A.card.x, y:A.card.y, s:S_WIDE},
     {t:1.00,  x:A.card.x, y:A.card.y, s:S_WIDE},   /* held: the viewer places the screen */
-    {t:T_CLICK-0.15, x:A.btn.x, y:A.btn.y+150, s:S_NEAR},
-    {t:T_CLICK+1.60, x:A.btn.x, y:A.btn.y+150, s:S_TIGHT},
+    /* The approach holds the control and the list it will change in the same frame,
+       so the result arrives where the viewer is already looking. */
+    {t:T_CLICK-0.15, x:(A.btn.x+A.row.x)/2, y:A.row.y, s:S_NEAR},
+    {t:T_CLICK+1.60, x:A.row.x, y:A.row.y, s:S_TIGHT},
     {t:T_TEXT-1.20,  x:A.card.x, y:A.card.y, s:S_WIDE}
   ].map(frame);
 
@@ -331,8 +390,8 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
      then an acceleration, which reads as hesitation. */
   var P_BTN = aim(A.btn.r, 0.42, 0.40);
   var CUR = [
-    {t:0.00, x:A.card.x-40, y:A.card.r.bottom-200},  /* already in frame at the opening */
-    {t:1.00, x:A.card.x-40, y:A.card.r.bottom-200},
+    {t:0.00, x:A.row.x-120, y:A.row.r.bottom+170},   /* already in frame at the opening */
+    {t:1.00, x:A.row.x-120, y:A.row.r.bottom+170},
     {t:T_CLICK-0.15, x:P_BTN.x, y:P_BTN.y},
     {t:T_CLICK+0.60, x:P_BTN.x, y:P_BTN.y},          /* held through the click */
     {t:T_TEXT-1.00,  x:A.card.r.right+420, y:A.card.r.bottom+300}   /* leaves the frame */
@@ -383,7 +442,14 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
     function share(r,s){return {w:+(r.width*s/W).toFixed(3), h:+(r.height*s/H).toFixed(3)};}
     report('dbg', JSON.stringify({fmt:FMT,
       S_WIDE:+S_WIDE.toFixed(3), S_NEAR:+S_NEAR.toFixed(3), S_TIGHT:+S_TIGHT.toFixed(3),
-      cardWide:share(A.card.r,S_WIDE), btnBox:A.btn.r, aimBtn:P_BTN},null,1));
+      cardWide:share(A.card.r,S_WIDE), btnBox:A.btn.r, aimBtn:P_BTN,
+      /* every keyframe after clamping, with the world window it actually shows:
+         a shot whose window is narrower than what it must hold cuts it off. */
+      shots:CAM.map(function(k){return {t:k.t, s:+k.s.toFixed(3),
+        world:[Math.round(k.x-W/2/k.s), Math.round(k.x+W/2/k.s)],
+        rowSeen:+(((Math.min(k.x+W/2/k.s,A.row.r.right)-Math.max(k.x-W/2/k.s,A.row.r.left))
+                  /A.row.r.width)).toFixed(2)};}),
+      rowBox:A.row.r},null,1));
   }
 
   /* The tip sits at (3, 2.2) in a 30x34 viewBox: bring it back to the rendered size,
@@ -417,6 +483,14 @@ html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;backgroun
 
     /* one screen at a time; a navigation happens because something was clicked */
     screens[0].style.opacity = 1;
+
+    /* the result of the gesture: the row opens, right after the click, where the
+       camera already is. Height and margin are assigned, never multiplied: a
+       property never written reads as the empty string and multiplying gives zero. */
+    var g=easeOut(seg(t,T_CLICK+0.10,T_CLICK+0.70));
+    rowNew.style.height=(92*g)+'px';
+    rowNew.style.marginBottom=(12*g)+'px';
+    rowNew.style.opacity=g;
 
     /* the window is born, then contracts and fades before the text */
     var into=easeOut(seg(t,0.00,0.60));
