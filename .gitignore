@@ -1,0 +1,9 @@
+# Les rendus et les images de controle ne sont pas des sources.
+qc/
+*.mp4
+*.wav
+*.jpg
+.DS_Store
+
+# Le reglage ecrit par la skill appartient au projet qui l'utilise, pas a elle.
+.motion-feature/

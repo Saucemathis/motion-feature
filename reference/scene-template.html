@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Feature film - template (edit me)</title>
+<!--
+  A scene is one self-contained HTML file. It renders frame by frame, driven by a single
+  timeline, so the same file produces the same video every time and in every format.
+
+  WHAT TO EDIT, in order:
+    1. :root            your design system's tokens
+    2. #bg              the background the window floats on
+    3. #card            the window, and inside it the screens of your product
+    4. The JSON blocks  sfx, and music if you have a track
+    5. "YOUR FILM"      the beats, the camera, the cursor path
+  Everything above "YOUR FILM" in the script is the engine. Leave it alone.
+
+  CHECK IT WITHOUT RENDERING:
+    #t=8.4      freeze on a frame            #verif    every click inside its target
+    #speed      cursor speed on screen       #echelle  the camera's scale curve
+    #debug      what share of the frame each element takes
+    #f=16x9     the wide cut (the square is the default)
+-->
+<style>
+:root{
+  /* ---- 1. YOUR DESIGN SYSTEM -------------------------------------------- */
+  /* Replace with the product's own tokens. Keep the names; the markup uses them. */
+  --brand-700:#5e32de; --brand-500:#7559f9; --brand-300:#b8a2fb; --brand-100:#eae9fe;
+  --gray-950:#09090b; --gray-900:#18181b; --gray-700:#3f3f46; --gray-500:#71717a;
+  --gray-400:#a1a1aa; --gray-300:#d4d4d8; --gray-200:#e4e4e7; --gray-100:#f4f4f5;
+  --page:#f7f7f6; --line:#ededed; --ink:#201c18;
+  --sans:system-ui,sans-serif; --serif:Georgia,serif;
+  /* Embed the real fonts as base64 in a stylesheet next to this file and link it
+     here, so no frame ever renders without the typeface. */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:var(--W,1080px);height:var(--H,1080px);overflow:hidden;background:#fff}
+#stage{position:relative;width:var(--W,1080px);height:var(--H,1080px);overflow:hidden}
+
+/* ---- 2. THE BACKGROUND --------------------------------------------------- */
+#bg{position:absolute;inset:-4%;
+  background:
+    radial-gradient(950px 750px at 16% 6%, #e3d7fb 0%, rgba(227,215,251,0) 64%),
+    radial-gradient(950px 750px at 88% 94%, #d9caf8 0%, rgba(217,202,248,0) 62%),
+    linear-gradient(155deg,#e9dffb 0%,#f4efe9 48%,#d9ccf7 100%);
+  will-change:transform}
+
+#camera{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
+
+/* ---- 3. THE WINDOW ------------------------------------------------------- */
+/* Give it the product's real proportions. Everything is measured from it, so its
+   size here is the only place that number lives. */
+#card{position:absolute;left:-40px;top:70px;width:2000px;height:940px;background:#fff;
+  opacity:0;transform-origin:50% 50%;will-change:transform,opacity;
+  border-radius:22px;overflow:hidden;
+  box-shadow:0 50px 100px -24px rgba(45,26,102,.30), 0 12px 30px rgba(45,26,102,.10),
+             0 0 0 1px rgba(255,255,255,.75)}
+
+.topbar{height:62px;display:flex;align-items:center;gap:16px;padding:0 28px;
+  background:#fff;border-bottom:1px solid var(--line)}
+.topbar .brand{font:700 19px/1 var(--serif);color:var(--gray-950)}
+.topbar .where{font:500 14px/1 var(--sans);color:var(--gray-500)}
+
+#app{position:absolute;left:0;top:62px;width:2000px;height:878px;background:var(--page)}
+.screen{position:absolute;inset:0;opacity:0}      /* one per screen of your film */
+
+.chrome{height:58px;display:flex;align-items:center;padding:0 32px;background:#fff;
+  border-bottom:1px solid var(--line)}
+.crumb{font:500 14px/1 var(--sans);color:var(--gray-500)}
+.crumb b{color:var(--gray-900);font-weight:600}
+.acts{margin-left:auto;display:flex;align-items:center;gap:10px}
+.act{display:flex;align-items:center;gap:8px;font:500 13.5px/1 var(--sans);
+  color:var(--gray-700);padding:9px 14px;border-radius:9px;
+  border:1px solid var(--gray-200);background:#fff}
+.act.prom{background:var(--brand-700);border-color:var(--brand-700);color:#fff}
+/* A control lights up before it is clicked: without it we see the cursor pass, not act. */
+.act.hot{background:var(--gray-100);border-color:var(--brand-300);
+  box-shadow:0 0 0 3px rgba(184,162,251,.30)}
+.body{padding:26px 32px;font:400 14px/1.6 var(--sans);color:var(--gray-500)}
+
+/* ---- the cursor ---------------------------------------------------------- */
+#cursor{position:absolute;left:0;top:0;width:28.8px;height:32.2px;
+  filter:drop-shadow(0 3px 5px rgba(24,24,27,.32));will-change:transform;z-index:9}
+#click{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;
+  border-radius:999px;background:rgba(94,50,222,.45);opacity:0;
+  will-change:transform;z-index:8}
+
+/* ---- full-frame text ----------------------------------------------------- */
+.t-full{font:700 13vmin/1.04 var(--serif);color:var(--ink);letter-spacing:-.025em}
+.frag{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0}
+.frag .line{display:inline-block;white-space:nowrap;transform-origin:50% 50%}
+.frag .w{display:inline-block;margin-right:.24em}
+.frag i{display:inline-block;font-style:normal;will-change:transform,opacity}
+
+/* ---- the end card -------------------------------------------------------- */
+#endcard{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0}
+#endcard .mark{width:60vmin;transform-origin:50% 50%;will-change:transform}
+</style>
+</head>
+
+<!-- data-duration and data-fps are the single source of truth: render.sh reads them. -->
+<body data-duration="12.0" data-fps="60">
+<div id="stage">
+  <div id="bg"></div>
+
+  <div id="camera">
+    <div id="card">
+      <div class="topbar">
+        <span class="brand">Product</span>
+        <span class="where">Where the user is</span>
+      </div>
+
+      <div id="app">
+        <!-- One .screen per screen of the film. They are stacked; the timeline fades
+             between them, because a navigation is a thing the user caused. -->
+        <div class="screen" id="sc-1">
+          <div class="chrome">
+            <span class="crumb">Section / <b>Page</b></span>
+            <span class="acts">
+              <span class="act" id="btn">The new control</span>
+              <span class="act prom">Something else</span>
+            </span>
+          </div>
+          <p class="body">Build the real page here, from the screenshots and the design
+            system. Everything the cursor aims at is measured from the markup, so the
+            layout is the only place a coordinate lives.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- The cursor lives in the card's space, so it grows with the zoom. -->
+    <div id="click"></div>
+    <svg id="cursor" viewBox="0 0 30 34" fill="none">
+      <path d="M3 2.2 L3 25.4 L9.2 19.9 L13.1 28.6 L17.6 26.6 L13.8 18.2 L22.2 17.6 Z"
+            fill="#fff" stroke="#18181b" stroke-width="1.7" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- Two to four words per fragment, 13 to 24 characters. One letter per <i>. -->
+  <div class="t-full frag" id="f0"><span class="line"><span class="w"><i>T</i><i>h</i><i>e</i></span><span class="w"><i>f</i><i>e</i><i>a</i><i>t</i><i>u</i><i>r</i><i>e</i><i>.</i></span></span></div>
+
+  <div id="endcard">
+    <!-- Your logo and wordmark as inline SVG. Born as a point, it grows to full size.
+         The viewBox must be tight around the artwork: any empty margin inside it pushes
+         the lockup off centre on a full-frame card, and nothing in the code shows it. -->
+    <svg class="mark" viewBox="1 0 217 120" aria-label="Logo">
+      <rect x="0" y="30" width="60" height="60" rx="14" fill="var(--brand-700)"/>
+      <text x="80" y="78" font-family="Georgia,serif" font-size="64" fill="var(--ink)">Logo</text>
+    </svg>
+  </div>
+</div>
+
+<!-- Sound effects. sfx.py synthesizes them; nothing is downloaded. One cue per click. -->
+<script type="application/json" id="sfx">
+{"cues":[
+  {"t":4.0,"k":"click"}
+]}
+</script>
+
+<!-- A music bed, optional. Measure the track's bar, take each piece at a downbeat, and
+     lay it at a second of the film. "ramp" brings a louder piece in at the level of the
+     one it follows and lets it climb, so the join is a lift and not a step.
+<script type="application/json" id="music">
+{"src":"~/Downloads/track.mp3",
+ "gain":0.85, "crossfade":0.05, "fade_in":0.25, "fade_out":1.40,
+ "segments":[
+   {"from":0.550,"to":12.548,"at":0.000}
+ ]}
+</script>
+-->
+
+<script>
+(function(){
+  /* ======================================================================
+     ENGINE. Edit nothing above the "YOUR FILM" banner.
+     ====================================================================== */
+
+  /* The square is the default; "#f=16x9" gives the wide cut. The world the camera
+     moves through is the same in both; only the window onto it changes. */
+  var FMT = (/f=([\w]+)/.exec(location.hash)||[])[1] || '1x1';
+  var W = FMT==='16x9' ? 1920 : 1080, H = FMT==='9x16' ? 1920 : 1080;
+  document.documentElement.style.setProperty('--W', W+'px');
+  document.documentElement.style.setProperty('--H', H+'px');
+
+  var D   = parseFloat(document.body.dataset.duration);
+  var cam = document.getElementById('camera');
+  var bg  = document.getElementById('bg');
+  var cur = document.getElementById('cursor');
+  var clk = document.getElementById('click');
+  var cardEl  = document.getElementById('card');
+  var endcard = document.getElementById('endcard');
+  var mark    = endcard.querySelector('.mark');
+  var screens = [].slice.call(document.querySelectorAll('.screen'));
+  var frag    = document.getElementById('f0');
+  var btn     = document.getElementById('btn');
+
+  /* --- helpers ---------------------------------------------------------- */
+  function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+  function seg(t,a,b){return clamp((t-a)/(b-a),0,1);}
+  function easeIO(u){return u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;}
+  function easeOut(u){return 1-Math.pow(1-u,3);}
+  function easeIn(u){return u*u*u;}
+  function lerp(a,b,u){return a+(b-a)*u;}
+  function track(keys,t){
+    if(t<=keys[0].t) return keys[0];
+    for(var i=0;i<keys.length-1;i++){
+      var a=keys[i],b=keys[i+1];
+      if(t<=b.t){
+        var u=easeIO(seg(t,a.t,b.t)),o={};
+        for(var k in a) if(k!=='t') o[k]=lerp(a[k],b[k],u);
+        return o;
+      }
+    }
+    return keys[keys.length-1];
+  }
+
+  /* --- measuring -------------------------------------------------------- */
+  /* Everything the camera and the cursor aim at is measured on the real layout,
+     once, with every screen visible and every transform neutralized. Measured
+     through a closed state, an entrance transform, or another element stacked
+     above it, an element gives a box the camera then frames empty space on. */
+  screens.forEach(function(s){s.style.opacity='1';});
+  cardEl.style.opacity='1'; cardEl.style.transform='none';
+
+  function centre(el){var r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2, r:r};}
+  /* Where to put the tip so the cursor reads as resting on the element: in its
+     upper third and past any icon, never on its edge. */
+  function aim(rect, fx, fy){return {x:rect.left+rect.width*fx, y:rect.top+rect.height*fy};}
+
+  var A = {
+    card: centre(cardEl),
+    btn : centre(btn)
+    /* add one entry per element the film aims at */
+  };
+
+  /* --- framing ---------------------------------------------------------- */
+  /* A beat is written as "how much world width should be visible", so the same
+     move reads correctly in every format. */
+  function zoom(visibleWidth){return W/visibleWidth;}
+  var SQ = FMT!=='16x9';
+  var cardW = A.card.r.width;
+
+  var S_WIDE = zoom(cardW + (SQ?120:300));   /* the opening: the window plus a margin */
+  var S_NEAR = zoom(SQ?1550:1720);           /* a step closer, the window still whole */
+  var S_TIGHT= zoom(SQ?1300:1250);           /* the beat that carries the argument */
+
+  /* When the camera approaches an element stuck to the window's edge, the framing
+     is calculated: the frame edge lands on the window edge, or the background
+     reappears behind it. Applied once, when the camera is built. */
+  var CARD = A.card.r;
+  function frame(k){
+    var hw=W/2/k.s, hh=H/2/k.s;
+    k.x = CARD.width*k.s  >= W ? clamp(k.x, CARD.left+hw, CARD.right-hw)  : A.card.x;
+    k.y = CARD.height*k.s >= H ? clamp(k.y, CARD.top+hh,  CARD.bottom-hh) : A.card.y;
+    return k;
+  }
+
+  /* --- full-frame text, ported so a fragment fills the same share of any frame */
+  var TARGET_W = SQ?0.76:0.60, EXITS = {left:[-1.30,0], right:[1.30,0]};
+  function fit(el,part){
+    var line=el.querySelector('.line');
+    if(!line.dataset.raw){
+      var ls=el.querySelectorAll('i'),before=[];
+      for(var i=0;i<ls.length;i++){before.push(ls[i].style.display);ls[i].style.display='inline-block';}
+      var t0=line.style.transform; line.style.transform='none';
+      line.dataset.raw=line.getBoundingClientRect().width;
+      line.style.transform=t0;
+      for(var j=0;j<ls.length;j++) ls[j].style.display=before[j];
+    }
+    return ((part||TARGET_W)*W)/parseFloat(line.dataset.raw);
+  }
+  function title(el,t,t0,hold,exit){
+    var line=el.querySelector('.line'), words=[].slice.call(el.querySelectorAll('.w'));
+    var k=fit(el);
+    var IN=0.55, PER_WORD=0.16, PER_LETTER=0.028, OUT=0.45;
+    var e=easeOut(seg(t,t0,t0+IN)), shown=seg(t,t0,t0+0.14);
+    var out=easeIn(seg(t,t0+hold,t0+hold+OUT)), v=EXITS[exit||'left'];
+    el.style.opacity=shown*(1-seg(t,t0+hold+OUT*0.55,t0+hold+OUT));
+    line.style.transform='translate('+(v[0]*W*out)+'px,'+(v[1]*H*out)+'px) scale('+(k*lerp(1.9,1.0,e))+')';
+    var rest=t0+IN;
+    for(var i=0;i<words.length;i++){
+      var ls=words[i].querySelectorAll('i');
+      for(var j=0;j<ls.length;j++){
+        var u;
+        if(i===0){u=1;}
+        else{var td=rest+(i-1)*PER_WORD+j*PER_LETTER;u=easeOut(seg(t,td,td+0.30));}
+        /* a letter that has not arrived takes no space, so the line recentres */
+        ls[j].style.display=u>0?'inline-block':'none';
+        ls[j].style.opacity=u;
+        ls[j].style.transform='translateY('+lerp(0.42,0,u)+'em)';
+      }
+    }
+  }
+
+  /* --- an image sheet, when a shot has to play a recording ----------------
+     A <video> does not advance deterministically when rendering freezes the clock.
+     One image holding every frame in a grid does. Size the element with
+     aspect-ratio on one cell, never a fixed height. */
+  var SHEET_COLS=12, SHEET_ROWS=12, SHEET_FPS=15, SHEET_N=SHEET_COLS*SHEET_ROWS;
+  function sheet(el, t, t0){
+    var f = Math.floor(Math.max(0,(t-t0))*SHEET_FPS) % SHEET_N;
+    var c = f % SHEET_COLS, r = Math.floor(f/SHEET_COLS);
+    el.style.backgroundPosition = (c*100/(SHEET_COLS-1))+'% '+(r*100/(SHEET_ROWS-1))+'%';
+  }
+
+  /* ======================================================================
+     YOUR FILM. Everything below is this film's own.
+     ====================================================================== */
+
+  /* The beats, on the track's bar. Write them as multiples of it from the start:
+     the clicks then land on downbeats by construction. */
+  var BAR = 2.0;
+  var T_CLICK = 2*BAR, T_TEXT = 4*BAR, T_LOGO = 5*BAR;
+  var CLICKS = [T_CLICK];
+
+  /* The camera: {t, x, y, s} is the stage point kept centred, at scale s.
+     A slow continuous move everywhere; no keyframe mid-shot unless a beat needs
+     one, because the easing brings the speed to zero at every keyframe. */
+  var CAM = [
+    {t:0.00,  x:A.card.x, y:A.card.y, s:S_WIDE},
+    {t:1.00,  x:A.card.x, y:A.card.y, s:S_WIDE},   /* held: the viewer places the screen */
+    {t:T_CLICK-0.15, x:A.btn.x, y:A.btn.y+150, s:S_NEAR},
+    {t:T_CLICK+1.60, x:A.btn.x, y:A.btn.y+150, s:S_TIGHT},
+    {t:T_TEXT-1.20,  x:A.card.x, y:A.card.y, s:S_WIDE}
+  ].map(frame);
+
+  /* The cursor's tip. One segment per gesture: a waypoint adds a deceleration and
+     then an acceleration, which reads as hesitation. */
+  var P_BTN = aim(A.btn.r, 0.42, 0.40);
+  var CUR = [
+    {t:0.00, x:A.card.x-40, y:A.card.r.bottom-200},  /* already in frame at the opening */
+    {t:1.00, x:A.card.x-40, y:A.card.r.bottom-200},
+    {t:T_CLICK-0.15, x:P_BTN.x, y:P_BTN.y},
+    {t:T_CLICK+0.60, x:P_BTN.x, y:P_BTN.y},          /* held through the click */
+    {t:T_TEXT-1.00,  x:A.card.r.right+420, y:A.card.r.bottom+300}   /* leaves the frame */
+  ];
+
+  /* --- readouts: nothing here is judged by eye --------------------------- */
+  function onScreen(tt){
+    var c=track(CAM,tt), p=track(CUR,tt);
+    return {x:W/2+(p.x-c.x)*c.s, y:H/2+(p.y-c.y)*c.s};
+  }
+  function report(id, text){
+    var e=document.createElement('pre'); e.id=id; e.textContent=text;
+    document.body.appendChild(e);
+  }
+  if(/speed/.test(location.hash)){
+    var rows=[], peak=0;
+    for(var i=0;i<CUR.length-1;i++){
+      var a=CUR[i].t,b=CUR[i+1].t; if(b-a<=0) continue;
+      var total=0,mx=0,prev=onScreen(a);
+      for(var tt=a+1/60;tt<=b+1e-9;tt+=1/60){
+        var q=onScreen(tt), d=Math.hypot(q.x-prev.x,q.y-prev.y)*60;
+        total+=d/60; if(d>mx) mx=d; prev=q;
+      }
+      if(mx>peak) peak=mx;
+      rows.push({seg:a.toFixed(2)+'->'+b.toFixed(2), px:Math.round(total),
+                 mean_px_s:Math.round(total/(b-a)), peak_px_s:Math.round(mx)});
+    }
+    rows.push({film_peak:Math.round(peak)});
+    report('spd', JSON.stringify(rows,null,1));
+  }
+  if(/echelle/.test(location.hash)){
+    var e=[];
+    for(var tt=0;tt<=D;tt+=0.25) e.push(tt.toFixed(2)+' '+track(CAM,tt).s.toFixed(3));
+    report('ech', e.join('\n'));
+  }
+  if(/verif/.test(location.hash)){
+    /* a click beside its button does not show in the code and barely shows in a still */
+    var targets=[{t:T_CLICK, r:A.btn.r, n:'btn'}];
+    report('vrf', JSON.stringify(targets.map(function(c){
+      var p=track(CUR,c.t);
+      return {target:c.n, tip:{x:Math.round(p.x),y:Math.round(p.y)},
+              inside:p.x>=c.r.left&&p.x<=c.r.right&&p.y>=c.r.top&&p.y<=c.r.bottom,
+              partX:+((p.x-c.r.left)/c.r.width).toFixed(2),
+              partY:+((p.y-c.r.top)/c.r.height).toFixed(2)};
+    }),null,1));
+  }
+  if(/debug/.test(location.hash)){
+    function share(r,s){return {w:+(r.width*s/W).toFixed(3), h:+(r.height*s/H).toFixed(3)};}
+    report('dbg', JSON.stringify({fmt:FMT,
+      S_WIDE:+S_WIDE.toFixed(3), S_NEAR:+S_NEAR.toFixed(3), S_TIGHT:+S_TIGHT.toFixed(3),
+      cardWide:share(A.card.r,S_WIDE), btnBox:A.btn.r, aimBtn:P_BTN},null,1));
+  }
+
+  /* The tip sits at (3, 2.2) in a 30x34 viewBox: bring it back to the rendered size,
+     or changing the cursor's size shifts every aim point. */
+  var curR = cur.getBoundingClientRect();
+  var TIP = {x: 3*(curR.width/30), y: 2.2*(curR.height/34)};
+
+  var FREEZE=null;
+  function draw(ms){
+    var t=clamp((FREEZE!==null?FREEZE*1000:ms)/1000,0,D);
+
+    bg.style.transform='scale('+(1+.018*(t/D))+')';
+
+    var c=track(CAM,t);
+    cam.style.transform='translate('+(W/2-c.x*c.s)+'px,'+(H/2-c.y*c.s)+'px) scale('+c.s+')';
+
+    var p=track(CUR,t);
+    cur.style.transform='translate('+(p.x-TIP.x)+'px,'+(p.y-TIP.y)+'px)';
+
+    /* every click gets a pulse: without it we see the cursor pass, not act */
+    var op=0,sc=1;
+    CLICKS.forEach(function(ct){
+      var u=seg(t,ct,ct+0.42);
+      if(u>0&&u<1){op=1-u;sc=1+3.2*easeOut(u);}
+    });
+    clk.style.opacity=op;
+    clk.style.transform='translate('+p.x+'px,'+p.y+'px) scale('+sc+')';
+
+    /* the control lights up just before it is clicked */
+    btn.classList.toggle('hot', t>T_CLICK-0.55 && t<T_CLICK+0.20);
+
+    /* one screen at a time; a navigation happens because something was clicked */
+    screens[0].style.opacity = 1;
+
+    /* the window is born, then contracts and fades before the text */
+    var into=easeOut(seg(t,0.00,0.60));
+    var out =easeIn(seg(t,T_TEXT-1.00,T_TEXT-0.25));
+    cardEl.style.opacity=into*(1-out);
+    cardEl.style.transform='scale('+(lerp(0.94,1,into)*lerp(1,0.94,out))+')';
+    /* a cursor does not disappear, it leaves the frame; this only cleans up after */
+    cur.style.opacity=into*(1-seg(t,T_TEXT-1.00,T_TEXT-0.70));
+
+    title(frag, t, T_TEXT, 1.45);
+
+    var lu=easeOut(seg(t,T_LOGO,T_LOGO+0.65));
+    endcard.style.opacity=easeOut(seg(t,T_LOGO,T_LOGO+0.35));
+    mark.style.transform='scale('+lerp(0.06,1,lu)+')';
+
+    if(FREEZE===null&&t<D) requestAnimationFrame(draw);
+  }
+  var m=/t=([\d.]+)/.exec(location.hash);
+  if(m){FREEZE=parseFloat(m[1]);draw(0);} else requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
