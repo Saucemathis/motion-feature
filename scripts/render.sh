@@ -2,6 +2,7 @@
 # Rend une scene motion en MP4, frame par frame, via timecut.
 # usage: render.sh <scene.html> [16x9|1x1|9x16] [sortie.mp4]
 set -euo pipefail
+source "$(dirname "$0")/chrome.sh"
 
 SCENE_PATH=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
 FMT=${2:-16x9}
@@ -9,8 +10,15 @@ case "$FMT" in
   16x9) VP="1920,1080" ;;
   1x1)  VP="1080,1080" ;;
   9x16) VP="1080,1920" ;;
-  *) echo "format inconnu: $FMT (16x9|1x1|9x16)"; exit 1 ;;
+  *) echo "unknown format: $FMT (16x9|1x1|9x16)" >&2; exit 1 ;;
 esac
+
+# Ce qui manque se dit avant le rendu, en clair, pas sous la forme d'un
+# "command not found" apres huit cents frames.
+if ! "$(dirname "$0")/check-setup.sh" --quiet; then
+  "$(dirname "$0")/check-setup.sh"
+  exit 4
+fi
 
 # La duree et le fps sont declares sur <body>, une seule source de verite.
 DUR=$(grep -o 'data-duration="[0-9.]*"' "$SCENE_PATH" | head -1 | grep -o '[0-9.]*')
@@ -40,13 +48,13 @@ print(os.path.expanduser(cfg["src"]))
 PY
 )
   if [ ! -f "$PISTE" ]; then
-    echo "piste introuvable: $PISTE" >&2
-    echo "corrige le \"src\" du bloc music de la scene, ou commente le bloc." >&2
+    echo "music track not found: $PISTE" >&2
+    echo "fix \"src\" in the scene's music block, or comment the block out." >&2
     exit 2
   fi
 fi
 
-echo "rendu ${BASE} ${FMT} ${VP} ${DUR}s @${FPS}fps -> ${OUT}"
+echo "rendering ${BASE} ${FMT} ${VP} ${DUR}s @${FPS}fps -> ${OUT}"
 
 # --executable-path : le Chromium embarque par timecut 0.3.3 date de 2020 et ne
 #   sait pas rendre le CSS moderne. Sans ca, couleurs et centrage sont faux.
@@ -55,7 +63,7 @@ echo "rendu ${BASE} ${FMT} ${VP} ${DUR}s @${FPS}fps -> ${OUT}"
 SILENT="${TMPDIR:-/tmp}/${BASE}-${FMT}-silent.mp4"
 npx timecut "file://${SCENE_PATH}#f=${FMT}" \
   --viewport "$VP" \
-  --executable-path "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --executable-path "$(chrome_or_die)" \
   --start-delay 3 \
   --fps "$FPS" \
   --duration "$DUR" \
@@ -80,6 +88,6 @@ else
   mv "$SILENT" "$OUT"
 fi
 
-echo "ok: $OUT"
+echo "done: $OUT"
 ffprobe -v error -show_entries format=duration:stream=width,height,r_frame_rate \
   -of default=noprint_wrappers=1 "$OUT"

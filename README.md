@@ -40,11 +40,26 @@ something changed, to reopen it.
 
 ## Requirements
 
-- macOS or Linux, Node and Python 3 with numpy, `ffmpeg`, and Google Chrome.
-- `render.sh` points at the system Chrome. The path in it is macOS; change it on Linux.
-  The Chromium bundled with timecut is from 2020 and renders modern CSS wrong, so this is
-  not optional.
-- `npx timecut` is fetched on first render.
+You do not have to work these out. On its first run the skill checks the machine, tells you
+what is missing and offers to install it for you. To see for yourself:
+
+```bash
+./scripts/check-setup.sh
+```
+
+It prints what is there, what is not, and the exact command for your machine, Mac with
+Homebrew, Linux, or WSL on Windows, including how to get Homebrew if that is what you are
+missing. What it looks for:
+
+| Tool | What it does here |
+| --- | --- |
+| Google Chrome | draws every frame; the Chromium bundled with timecut is from 2020 and renders modern CSS wrong, so the system one is not optional |
+| Node | runs the renderer; `npx timecut` is fetched on the first render |
+| Python 3, numpy, scipy | build and filter the soundtrack |
+| ffmpeg and ffprobe | assemble the frames into a video and read it back |
+
+Chrome is found automatically on macOS, Linux and WSL. `CHROME=/path/to/chrome` overrides
+the search. Windows itself is not supported directly: install WSL and work inside it.
 
 ## What is in here
 
@@ -53,6 +68,8 @@ something changed, to reopen it.
 | `SKILL.md` | The procedure Claude follows: setup, material, script, build, render, trace |
 | `reference/craft.md` | The rules that make these films read, with the numbers, measured on films that shipped |
 | `reference/scene-template.html` | The engine: camera, cursor, timeline, readouts, text and end card, plus a worked one-click example |
+| `scripts/check-setup.sh` | What this machine is missing, and the command that installs it |
+| `scripts/chrome.sh` | Finds the system Chrome on macOS, Linux and WSL |
 | `scripts/qc.sh` | Fixed frames from a scene, without a full render |
 | `scripts/render.sh` | Frame-by-frame render to MP4, soundtrack mixed in |
 | `scripts/sfx.py` | Synthesizes the sound effects the scene declares; nothing is downloaded |
@@ -64,6 +81,7 @@ The template renders on its own:
 
 ```bash
 cd motion-feature
+./scripts/check-setup.sh                                         # is anything missing
 ./scripts/qc.sh reference/scene-template.html 1x1 0.6 4.0 10.5   # three frames
 ./scripts/render.sh reference/scene-template.html 1x1            # a 12s MP4
 ```

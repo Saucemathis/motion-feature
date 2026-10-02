@@ -2,6 +2,7 @@
 # Extrait des frames fixes d'une scene, sans passer par un rendu complet.
 # usage: qc.sh <scene.html> <16x9|1x1|9x16> <t1> [t2 ...]
 set -euo pipefail
+source "$(dirname "$0")/chrome.sh"
 
 SCENE_PATH=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
 FMT=$2; shift 2
@@ -14,7 +15,7 @@ OUTDIR=${QC_DIR:-./qc}
 mkdir -p "$OUTDIR"
 
 for T in "$@"; do
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  "$(chrome_or_die)" \
     --headless --disable-gpu --hide-scrollbars \
     --window-size="${VP/,/,}" \
     --virtual-time-budget=2500 \

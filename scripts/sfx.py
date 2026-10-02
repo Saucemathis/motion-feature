@@ -127,7 +127,7 @@ def main():
     html = re.sub(r'<!--.*?-->', '', html, flags=re.S)
     m = re.search(r'<script type="application/json" id="sfx">(.*?)</script>', html, re.S)
     if not m:
-        print("pas de bloc sfx dans la scene, aucune bande son generee")
+        print("no sfx block in the scene; no soundtrack generated")
         return 1
     cues = json.loads(m.group(1))["cues"]
     dur = float(re.search(r'data-duration="([\d.]+)"', html).group(1))
@@ -155,7 +155,7 @@ def main():
     with wave.open(out, "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((st * 32767).astype("<i2").tobytes())
-    print("bande son: %s (%.1fs, %d reperes)" % (out, dur, len(cues)))
+    print("soundtrack: %s (%.1fs, %d cues)" % (out, dur, len(cues)))
     return 0
 
 if __name__ == "__main__":

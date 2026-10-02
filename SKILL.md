@@ -1,6 +1,6 @@
 ---
 name: motion-feature
-description: "Produces a short product feature announcement video: the product's own UI recreated in HTML/CSS and put in motion, a scripted cursor performing the gesture, camera moves, an end card, rendered to MP4 in 1:1 and 16:9 with sound. Asks once for the feature's source material, the design system and the background, then remembers them. Triggers: 'video for feature X', 'product announcement video', 'motion design', 'feature video', '/motion-feature'."
+description: "Produces a short product feature announcement video: the product's own UI recreated in HTML/CSS and put in motion, a scripted cursor performing the gesture, camera moves, an end card, rendered to MP4 in 1:1 and 16:9 with sound. Checks the machine has what it needs and offers to install what is missing, asks once for the feature's source material, the design system and the background, then remembers them. Triggers: 'video for feature X', 'product announcement video', 'motion design', 'feature video', '/motion-feature'."
 metadata:
   version: 1.0.0
 ---
@@ -19,7 +19,33 @@ remake the film six months later when the product has moved on.
 framing, cursor, camera, typing, sound, and the measurements that catch what the eye
 misses. Read it before writing anything. This file holds the procedure.
 
-## Step 0 — setup, asked once
+## Step 0a — check the machine can render, before anything else
+
+Films are rendered by tools that live outside this folder: Node, Python with numpy and
+scipy, ffmpeg, and Google Chrome. **Run `scripts/check-setup.sh` at the start of the first
+run in a project**, before the intake, and again whenever a render fails with a missing
+command. It is silent when everything is there.
+
+If something is missing, it prints every missing piece at once and the exact command for
+this machine, macOS with Homebrew, Linux or WSL, including how to get Homebrew when that
+is what is missing. Then:
+
+1. **Show the person what is missing and what it is for**, in their language, in a line or
+   two. Not a terminal dump: "ffmpeg assembles the frames into a video, and it is not on
+   your machine."
+2. **Offer to install it, and say what the command will do.** Installing software on
+   someone's computer is their decision, not yours, and a non-developer cannot judge a
+   command they did not ask for. Ask once, plainly: may I install these.
+3. **On yes, run it and report the result.** On no, give them the command to run
+   themselves and stop: there is no film without these.
+4. **Homebrew is its own step.** Its installer asks for the Mac password and prints two
+   lines to paste so that `brew` is found afterwards. You cannot type the password for
+   them, so hand them the command, say what it will ask, and wait.
+
+Never install anything without that yes, and never work around a missing tool by
+rendering at lower quality or skipping the sound.
+
+## Step 0b — setup, asked once
 
 Three things do not change from one film to the next, and the film is only as good as
 they are. Ask for them **once**, write them down, and never ask again.
@@ -83,6 +109,10 @@ matches the first.
 # motion-feature setup
 
 Written <date>. Edit this file or run `/motion-feature setup` when something changes.
+
+## Machine
+Checked on <date>: everything `scripts/check-setup.sh` asks for is installed.
+<or: what is missing and what the person decided about it>
 
 ## Source of the feature explanation
 <where the written explanation lives, and how to get at it>
@@ -193,6 +223,7 @@ The scene contract, to respect:
 ## Step 4 — render and check
 
 ```bash
+scripts/check-setup.sh                        # is this machine able to render
 scripts/qc.sh <scene.html> 1x1 0.5 4.8 8.6    # fixed frames, no full render
 scripts/render.sh <scene.html> 1x1            # MP4 with its soundtrack
 scripts/render.sh <scene.html> 16x9
@@ -239,7 +270,8 @@ What remains must be enough for someone else to redo one:
 
 - **`--executable-path` pointing at the system Chrome is mandatory** in `render.sh`. The
   Chromium bundled with timecut 0.3.3 dates from 2020: without it, modern CSS breaks and
-  colours and centring come out wrong. The path in the script is macOS; change it on Linux.
+  colours and centring come out wrong. `chrome.sh` finds it on macOS, Linux and WSL;
+  `CHROME=/path/to/chrome` overrides the search.
 - **No `--threads`**: multi-threading crashes on the temp folders.
 - **`--start-delay 3`** at minimum, otherwise the first frames film a page that has not
   settled.

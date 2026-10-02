@@ -66,14 +66,14 @@ def main():
     html = re.sub(r'<!--.*?-->', '', html, flags=re.S)
     m = re.search(r'<script type="application/json" id="music">(.*?)</script>', html, re.S)
     if not m:
-        print("pas de bloc music dans la scene, aucun lit musical")
+        print("no music block in the scene; no music bed")
         return 1
     cfg = json.loads(m.group(1))
     dur = float(re.search(r'data-duration="([\d.]+)"', html).group(1))
 
     src = os.path.expanduser(cfg["src"])
     if not os.path.exists(src):
-        print("piste introuvable: %s" % src, file=sys.stderr)
+        print("music track not found: %s" % src, file=sys.stderr)
         return 2
     track = decode(src)
     xf = int(float(cfg.get("crossfade", 0.05)) * SR)
@@ -120,7 +120,7 @@ def main():
     with wave.open(out, "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((np.clip(mix, -1, 1) * 32767).astype("<i2").tobytes())
-    print("musique: %d morceaux de %s, gain %.2f, crete %.2f -> %s"
+    print("music: %d segments from %s, gain %.2f, peak %.2f -> %s"
           % (len(cfg["segments"]), os.path.basename(src), cfg.get("gain", 0.40), peak, out))
     return 0
 
