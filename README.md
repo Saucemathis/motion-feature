@@ -82,7 +82,7 @@ here are invisible in a still and obvious in the video:
 | `#verif` | for each click, whether the cursor tip falls inside its target |
 | `#speed` | the cursor's speed on screen, segment by segment, camera included |
 | `#echelle` | the camera's scale every quarter second, where a zoom in followed by a zoom out shows as a peak |
-| `#debug` | what share of the frame each element takes |
+| `#debug` | what share of the frame each element takes, and what each shot holds |
 | `#f=16x9` | the wide cut; the square is the default |
 
 ## Credit and licence

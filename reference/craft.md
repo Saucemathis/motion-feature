@@ -57,6 +57,20 @@ Full-frame text is the easy case and already followed this: a phrase fills 0,76 
 square's width against 0,60 of the wide one, because a phrase can be scaled to its frame
 and a screenshot cannot.
 
+## A shot cannot hold what is wider than its window
+
+Before tuning a framing by eye, compare the element's width against the world width the
+shot shows. A row 1636 wide in a shot showing 1300 loses 168 pixels at each end, and those
+are the ends that carry the label and the badge, so the result of the gesture arrives
+unreadable. Centring on the element does not help: it cuts both sides instead of one.
+
+The answer is usually the layout, not the camera. Real interfaces cap their content width
+and centre it; a recreation that lets a row run the full width of a 2000-pixel window has
+invented a page no product ships, and no square frame can hold it. Cap the content, then
+check the number: for each keyframe, the world window it shows and the share of the target
+inside it. `#debug` prints both, and a shot holding less than all of its subject is a
+framing error the still at that second will not make obvious.
+
 ## A window shorter than the frame caps the zoom
 
 A window 940 high inside a 1080 frame can only be zoomed past about 1,15 by giving up the
